@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+
+
+<html>
+  <head>
+    {% load staticfiles %}
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="{% static 'js/master.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/master.css' %}">
+  </head>
+  <body>
+    <h1> Films by Year </h1>
+      {%for year in years %}
+        <li id='list-item'>
+        <a href = "{% url 'movies:films' year %}"> {{year}} </a>
+        </li>
+
+      {% endfor %}
+
+  </body>
+</html>
+
+<script>
+/*
+$(document).ready(function () {
+  $('a').click(function() {
+    var year = $(this).text());
+
+  });
+});
+alert(year);
+*/
+</script>

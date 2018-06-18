@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<link rel="stylesheet" href="{% static 'css/master.css' %}">
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="{% static 'js/master.js' %}"></script>
+
+<html>
+  <head>
+  </head>
+  <body>
+
+    <h1 class="title"> {{pk}} Films</h1>
+    <div class="container">
+      <ul class="inner-centered-list">
+        {% for image in images %}
+          <li class="list-item">
+            <a href = "#"> <img src={{image}}></a>
+          </li>
+        {% endfor %}
+      </ul>
+
+    </div>
+
+  </body>
+  <script>
+    var year = {{pk}};
+
+    var movieSocket = new WebSocket('ws://'+ window.location.host + '/ws/movies/' + year + '/');
+
+    movieSocket.onmessage = function(e) {
+      var data = JSON.parse(e.data);
+      var message = data['message'];
+      document.querySelector('.inner-centered-list').value += (message) // + '\n');
+    };
+
+    movieSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+
+
+
+  </script>
+</html>

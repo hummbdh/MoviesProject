@@ -27,24 +27,3 @@ class FilmYears(TemplateView):
         context['images'] = middleware.WikiDataMiddleware.get_image(self, context['films'], context['pk'])
         context['movies'] = zip(context['films'], context['images'])
         return context
-
-"""
-class FilmYears(TemplateView):
-        model = FilmYear
-        template_name = 'films.html'
-
-        def get_context_data(self, **kwargs):
-            context = super(FilmYears, self).get_context_data(**kwargs)
-            context['images'] = middleware.WikiDataMiddleware.get_image(self, context['pk'])
-            return context
-
-        def get_context_data(self, **kwargs):
-            context = super(FilmYears, self).get_context_data(**kwargs)
-            context['films'] = middleware.WikiDataMiddleware.get_films(self, context['pk'])
-            return context
-
-        def get_year(self, request, *args, **kwargs):
-            self.year = super(FilmYears, self).get_context_data(**kwargs)
-            return super().get(request, *args, **kwargs)
-
-"""

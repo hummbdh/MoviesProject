@@ -11,6 +11,8 @@ class WikiDataMiddleware(MiddlewareMixin):
         from Wikipedia APIs
     """
 
+    # Make calls to Wikipedia API to retrieve list of
+    # years that movies were made
     def get_film_years(self):
         base_url = 'https://en.wikipedia.org/w/api.php'
         params = {
@@ -20,13 +22,18 @@ class WikiDataMiddleware(MiddlewareMixin):
                     'format': 'json',
                     'cmlimit': '500',
                  }
+                 
         r = requests.get(base_url, params=params)
         movies = r.json()
+
+        # Parse response to retrieve years
         movies = movies['query']['categorymembers'][8::]
         movies = [ x['title'] for x in movies[1::] ]
         movie_list = [ (re.search(r"[^Category:](.*)[^ films]", str(x)).group(0)) for x in movies]
         return movie_list
 
+    # Based on users choice of year, call wikipedia
+    # API and request all of the movies recorded for that year
     def get_films(self, year):
         base_url = 'https://en.wikipedia.org/w/api.php'
         params = {
@@ -34,7 +41,6 @@ class WikiDataMiddleware(MiddlewareMixin):
                     'format': 'json',
                     'page': 'List of American films of ' + year,
                     'prop': 'wikitext',
-                    #'section': '10',
                     'formatversion': '1',
                  }
 
@@ -42,8 +48,10 @@ class WikiDataMiddleware(MiddlewareMixin):
         films = r.json()
         films = films['parse']['wikitext']['*']
 
+        # Wikipedia's response, when put into JSON format is
+        # very messy, requires a number of regular expression
+        # searches
         film = list(set(re.findall(r"\'\'\[\[(.*?)\]\]\'\'", films))) # set() used to remove duplicates
-        #film_list = re.findall(r".+?(?=\|)", film[6])
         film_list = []
         for movie_title in film:
             if '|' in movie_title:
@@ -51,11 +59,13 @@ class WikiDataMiddleware(MiddlewareMixin):
                 film_list.append(text_search.group(0))
             else:
                 film_list.append(movie_title)
-        return film_list #set(film_list)
+        return film_list
 
+    # From Open Movie Database API retrieve movie posters
+    # associated with each movie
     def get_image(self, *args):
-        POSTER_API = "http://img.omdbapi.com/" #+ OMBDB_API_KEY
-        OMDB_API = "http://www.omdbapi.com/" #+ OMBDB_API_KEY
+        POSTER_API = "http://img.omdbapi.com/"
+        OMDB_API = "http://www.omdbapi.com/"
 
         OMDB_params = {
                             'apikey': API_KEYS['OMDB_API_KEY'],
@@ -64,12 +74,16 @@ class WikiDataMiddleware(MiddlewareMixin):
 
         POSTER_params = {
                             'apikey': API_KEYS['OMDB_API_KEY'],
-                            #'h': 500,
                         }
         images = []
         film_list = args[0]
         for film in film_list:
             OMDB_params['t'] =  film
+
+            # OMDB API often returns a 404 response for the movie
+            # poster requested.  Try and Except are included for
+            # continutiy and as a future effort to retry failed
+            # requests
             try:
                 r = requests.get(OMDB_API, params=OMDB_params,timeout=0.1).json()
                 if (r['Response'] == 'True'):
@@ -79,16 +93,9 @@ class WikiDataMiddleware(MiddlewareMixin):
                         if (r.status_code == 200):
                             print(r)
                             images.append(r.url)
-                        else:
-                            pass
                     except:
                         print('Did not work')
-                else:
-                    #print(r['Response'])
-                    pass
             except:
-                pass #print(r)
-            else:
                 pass
         return images
 
